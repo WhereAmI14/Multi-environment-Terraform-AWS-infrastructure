@@ -89,15 +89,19 @@ module "compute" {
 module "database" {
   source = "../modules/database"
 
-  name                  = var.name_prefix
-  vpc_id                = module.network.vpc_id
-  db_subnet_group_name  = module.network.db_subnet_group_name
-  app_security_group_id = module.compute.web_security_group_id
-  db_name               = var.db_name
-  db_username           = var.db_username
-  db_password           = var.db_password
-  instance_class        = var.db_instance_class
-  allocated_storage     = var.db_allocated_storage
-  engine_version        = var.db_engine_version
-  tags                  = local.tags
+  name                    = var.name_prefix
+  vpc_id                  = module.network.vpc_id
+  db_subnet_group_name    = module.network.db_subnet_group_name
+  app_security_group_id   = module.compute.web_security_group_id
+  db_name                 = var.db_name
+  db_username             = var.db_username
+  db_password             = var.db_password
+  instance_class          = var.db_instance_class
+  allocated_storage       = var.db_allocated_storage
+  engine_version          = var.db_engine_version
+  backup_retention_period = var.db_backup_retention_period
+  deletion_protection     = var.db_deletion_protection
+  skip_final_snapshot     = var.db_skip_final_snapshot
+  multi_az                = var.db_multi_az
+  tags                    = local.tags
 }

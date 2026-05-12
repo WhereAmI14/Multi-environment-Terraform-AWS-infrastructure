@@ -1,5 +1,6 @@
 # Local Terraform directories
 **/.terraform/*
+.terraform-validate/
 
 # Terraform state
 *.tfstate

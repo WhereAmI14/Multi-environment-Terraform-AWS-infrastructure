@@ -6,6 +6,11 @@ variable "name" {
 variable "ami_id" {
   description = "AMI ID for the application server."
   type        = string
+
+  validation {
+    condition     = can(regex("^ami-[0-9a-f]+$", var.ami_id))
+    error_message = "AMI ID must look like ami-0123456789abcdef0."
+  }
 }
 
 variable "instance_type" {
@@ -13,8 +18,8 @@ variable "instance_type" {
   type        = string
 
   validation {
-    condition     = contains(["t3.micro"], var.instance_type)
-    error_message = "Use t3.micro to stay aligned with AWS Free Tier-eligible EC2 size."
+    condition     = contains(["t3.micro", "t3.small", "t3.medium"], var.instance_type)
+    error_message = "Use one of: t3.micro, t3.small, t3.medium."
   }
 }
 
@@ -31,11 +36,21 @@ variable "vpc_id" {
 variable "key_name" {
   description = "AWS EC2 key pair name."
   type        = string
+
+  validation {
+    condition     = length(trimspace(var.key_name)) > 0
+    error_message = "Key pair name cannot be empty."
+  }
 }
 
 variable "allowed_ssh_cidr" {
   description = "CIDR allowed to SSH into app server."
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.allowed_ssh_cidr, 0)) && var.allowed_ssh_cidr != "0.0.0.0/0"
+    error_message = "SSH CIDR must be valid and cannot be open to 0.0.0.0/0."
+  }
 }
 
 variable "user_data" {

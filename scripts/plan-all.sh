@@ -5,4 +5,4 @@ for env in dev staging production; do
   echo "==> planning ${env}"
   terraform -chdir="${env}" plan
   echo
- done
+done

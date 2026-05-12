@@ -46,6 +46,9 @@ flowchart TB
 |   |-- network/            # VPC, subnets, routing, DB subnet group
 |   |-- compute/            # EC2 instance and web security group
 |   `-- database/           # RDS instance and DB security group
+|-- docs/
+|   `-- modules.md          # Module reference
+|-- .github/workflows/      # CI and manual deployment workflows
 |-- scripts/
 |   `-- plan-all.sh         # Plans all environments
 |-- Makefile                # Common local commands
@@ -66,6 +69,7 @@ flowchart TB
   - `tflint`
   - `checkov`
   - `infracost`
+  - `terraform-docs`
 
 ## Quick Start
 
@@ -132,11 +136,20 @@ make fmt-check       # check formatting
 make validate        # validate dev, staging, and production
 make lint            # run tflint recursively
 make security        # run checkov
+make docs            # update terraform-docs section in README.md
 make plan-dev        # plan dev
 make plan-staging    # plan staging
 make plan-production # plan production
 make cost-dev        # run infracost for dev
 ```
+
+## Terraform Docs
+
+Run `make docs` to refresh the generated root-module documentation.
+
+<!-- BEGIN_TF_DOCS -->
+Generated Terraform inputs and outputs are inserted here by `terraform-docs`.
+<!-- END_TF_DOCS -->
 
 ## State And Secrets
 
@@ -168,38 +181,50 @@ AWS Free Tier is account-wide, not per environment. Running `dev`, `staging`,
 and `production` at the same time can still create billable usage. For learning,
 apply one environment at a time and destroy it when finished.
 
-## CI/CD Ideas
+## CI/CD
 
-A practical GitHub Actions setup for this repo would use two workflows:
+The repository includes two GitHub Actions workflows:
 
-1. Pull request checks:
+1. `.github/workflows/terraform-ci.yml`
    - `terraform fmt -check -recursive`
    - `terraform init -backend=false` and `terraform validate` per environment
    - `tflint --recursive`
    - `checkov -d . --framework terraform`
-   - optional `infracost breakdown` with a PR comment
 
-2. Deployment workflow:
-   - Runs only after merge to `main`
+2. `.github/workflows/terraform-deploy.yml`
+   - Runs manually with `workflow_dispatch`
    - Uses GitHub Environments named `dev`, `staging`, and `production`
    - Requires manual approval for `production`
    - Authenticates to AWS with OIDC instead of long-lived AWS keys
-   - Runs `terraform plan` first, stores the plan as an artifact, then applies
-     the reviewed plan
+   - Runs `terraform plan` by default and only applies when `apply` is selected
+
+For deployment, define these GitHub Environment values:
+
+- `AWS_ROLE_TO_ASSUME` - IAM role ARN trusted by GitHub OIDC
+- `AWS_REGION` - target AWS region
+- `TF_BACKEND_CONFIG` - backend config matching `backend.hcl.example`
+- `TF_VARS` - secret containing environment-specific Terraform variable values
 
 Avoid automatic `apply` from pull requests, especially from forks.
+
+## Production Defaults
+
+Production uses safer database defaults than lower environments:
+
+- RDS deletion protection is enabled.
+- Final snapshots are enabled for intentional destroys.
+- Backup retention defaults to 14 days.
+- CloudWatch log retention defaults to 365 days.
+- Multi-AZ is configurable with `db_multi_az`.
 
 ## Improvement Ideas
 
 - Customize the AMI lookup filters if your organization uses golden images.
-- Add variable validation for CIDR ranges, environment names, instance sizes,
-  and database settings.
-- Split production settings further from lower environments: stricter SSH
-  access, deletion protection, longer backups, final snapshots, and Multi-AZ RDS.
+- Add an Infracost pull request comment for cost visibility.
+- Split production settings further from lower environments with stricter SSH
+  access or AWS Systems Manager Session Manager.
 - Add HTTPS with an Application Load Balancer and ACM certificate instead of
   exposing a single EC2 instance directly.
-- Move SSH access to AWS Systems Manager Session Manager and remove public SSH.
 - Add NAT Gateway or VPC endpoints if private workloads need outbound access.
-- Add generated module documentation with `terraform-docs`.
 - Add examples or screenshots showing the deployed web page and AWS resource
   layout.

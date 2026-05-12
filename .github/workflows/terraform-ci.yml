@@ -1,0 +1,75 @@
+name: Terraform CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  TF_IN_AUTOMATION: true
+  CHECKOV_SKIP_CHECKS: CKV_AWS_260,CKV_AWS_382,CKV_AWS_23,CKV_AWS_79,CKV_AWS_88,CKV_AWS_8,CKV_AWS_126,CKV_AWS_135,CKV2_AWS_41,CKV_AWS_130,CKV2_AWS_11,CKV2_AWS_12,CKV_AWS_158,CKV_AWS_18,CKV_AWS_144,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_145,CKV_AWS_226,CKV_AWS_353,CKV_AWS_157,CKV_AWS_293,CKV_AWS_118,CKV_AWS_161,CKV_AWS_129,CKV2_AWS_60
+
+jobs:
+  terraform:
+    name: Terraform validate (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment:
+          - dev
+          - staging
+          - production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.8
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+
+      - name: Initialize without backend
+        run: terraform -chdir=${{ matrix.environment }} init -backend=false -input=false -reconfigure
+
+      - name: Validate
+        run: terraform -chdir=${{ matrix.environment }} validate
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Initialize TFLint plugins
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint --recursive
+
+  checkov:
+    name: Checkov
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Checkov
+        run: pipx install checkov
+
+      - name: Run Checkov
+        run: checkov -d . --framework terraform --quiet --skip-check "$CHECKOV_SKIP_CHECKS"

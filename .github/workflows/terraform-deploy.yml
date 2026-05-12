@@ -1,0 +1,77 @@
+name: Terraform Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      apply:
+        description: Apply the reviewed plan
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_IN_AUTOMATION: true
+
+jobs:
+  deploy:
+    name: Terraform ${{ inputs.apply && 'apply' || 'plan' }} (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.8
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Write backend config
+        env:
+          TF_BACKEND_CONFIG: ${{ vars.TF_BACKEND_CONFIG }}
+        run: |
+          if [ -z "$TF_BACKEND_CONFIG" ]; then
+            echo "Set TF_BACKEND_CONFIG as a GitHub Environment variable."
+            exit 1
+          fi
+          printf '%s\n' "$TF_BACKEND_CONFIG" > backend.hcl
+
+      - name: Write tfvars
+        env:
+          TF_VARS: ${{ secrets.TF_VARS }}
+        run: |
+          if [ -n "$TF_VARS" ]; then
+            printf '%s\n' "$TF_VARS" > terraform.tfvars
+          fi
+
+      - name: Initialize
+        run: terraform init -backend-config=backend.hcl
+
+      - name: Plan
+        run: terraform plan -out=tfplan
+
+      - name: Apply
+        if: inputs.apply
+        run: terraform apply -auto-approve tfplan
