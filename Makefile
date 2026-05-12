@@ -1,5 +1,3 @@
-CHECKOV_SKIP_CHECKS := CKV_AWS_260,CKV_AWS_382,CKV_AWS_23,CKV_AWS_79,CKV_AWS_88,CKV_AWS_8,CKV_AWS_126,CKV_AWS_135,CKV2_AWS_41,CKV_AWS_130,CKV2_AWS_11,CKV2_AWS_12,CKV_AWS_158,CKV_AWS_18,CKV_AWS_144,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_145,CKV_AWS_226,CKV_AWS_353,CKV_AWS_157,CKV_AWS_293,CKV_AWS_118,CKV_AWS_161,CKV_AWS_129,CKV2_AWS_60
-
 .PHONY: setup fmt fmt-check validate lint security docs init-dev init-staging init-production plan-dev plan-staging plan-production cost-dev cost-staging cost-production
 
 setup:
@@ -24,7 +22,7 @@ lint:
 	tflint --recursive
 
 security:
-	checkov -d . --framework terraform --quiet --skip-check "$(CHECKOV_SKIP_CHECKS)"
+	checkov -d . --config-file .checkov.yml
 
 docs:
 	terraform-docs markdown table --output-file README.md --output-mode inject .
