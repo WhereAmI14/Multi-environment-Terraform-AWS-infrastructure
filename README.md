@@ -3,6 +3,10 @@
 Production-style Terraform example for deploying a small AWS web stack across
 `dev`, `staging`, and `production` environments.
 
+> Personal learning project: modular Terraform across dev, staging, and
+> production-style environments. It demonstrates infrastructure-as-code
+> structure and workflow patterns, but it is not production-tested.
+
 The project is intentionally simple enough for learning, but structured like a
 real infrastructure repository: reusable modules, isolated environment roots,
 remote state examples, validation tooling, linting, and security scanning.
