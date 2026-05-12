@@ -1,4 +1,4 @@
-# Terraform Modules (aws-terra-3)
+# Terraform Modules
 
 This folder contains reusable Terraform modules used by all environments (`dev`, `staging`, `production`).
 

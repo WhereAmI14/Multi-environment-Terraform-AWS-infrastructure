@@ -1,4 +1,4 @@
-# aws-terra-3
+# Terraform AWS Three-Tier Environments
 
 Production-style Terraform example for deploying a small AWS web stack across
 `dev`, `staging`, and `production` environments.
@@ -55,12 +55,11 @@ flowchart TB
 
 ## Prerequisites
 
-- Terraform `>= 1.6`
+- Terraform `>= 1.10`
 - AWS CLI configured with credentials
 - Existing EC2 key pair in the target AWS region
 - S3 bucket for Terraform remote state
-- DynamoDB table for Terraform state locking, or S3 native locking if you remove
-  the DynamoDB setting
+- S3 state locking enabled with `use_lockfile = true`
 - Optional local quality tools:
   - `make`
   - `pre-commit`
@@ -116,13 +115,13 @@ The examples below use `dev`. Repeat the same pattern for `staging` and
 Each environment needs local values that should not be committed:
 
 ```hcl
-key_pair_name    = "your-existing-ec2-key-pair"
-allowed_ssh_cidr = "203.0.113.10/32"
-db_password      = "replace-with-a-strong-password"
+key_pair_name    = "example-key-pair"
+allowed_ssh_cidr = "198.51.100.10/32"
+db_password      = "example-change-me-password"
 ```
 
-You can also override defaults such as the AWS region, VPC CIDR, AMI ID,
-instance type, database class, and database storage size.
+You can also override defaults such as the AWS region, VPC CIDR, availability
+zones, AMI ID, instance type, database class, and database storage size.
 
 ## Common Commands
 
@@ -192,8 +191,7 @@ Avoid automatic `apply` from pull requests, especially from forks.
 
 ## Improvement Ideas
 
-- Replace the fixed AMI ID with an `aws_ami` data source so each region can use
-  the latest approved Amazon Linux image.
+- Customize the AMI lookup filters if your organization uses golden images.
 - Add variable validation for CIDR ranges, environment names, instance sizes,
   and database settings.
 - Split production settings further from lower environments: stricter SSH

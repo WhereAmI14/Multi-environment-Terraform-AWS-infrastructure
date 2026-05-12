@@ -1,7 +1,7 @@
 # Local values for shared tags and EC2 bootstrap script.
 locals {
   tags = {
-    Project     = "aws-terra-3"
+    Project     = var.project_name
     Environment = "production"
     ManagedBy   = "terraform"
   }
@@ -21,9 +21,33 @@ locals {
 
     systemctl enable --now httpd
     cat <<HTML > /var/www/html/index.html
-    <html><body><h1>aws-terra-3 production</h1></body></html>
+    <html><body><h1>${var.project_name} production</h1></body></html>
     HTML
   EOT
+}
+
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 
 # Apply baseline shared resources for this environment.
@@ -40,7 +64,7 @@ module "network" {
 
   name                 = var.name_prefix
   vpc_cidr             = var.vpc_cidr
-  azs                  = var.azs
+  azs                  = length(var.azs) > 0 ? var.azs : slice(data.aws_availability_zones.available.names, 0, 2)
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
   tags                 = local.tags
@@ -51,7 +75,7 @@ module "compute" {
   source = "../modules/compute"
 
   name             = var.name_prefix
-  ami_id           = var.ami_id
+  ami_id           = coalesce(var.ami_id, data.aws_ami.amazon_linux.id)
   instance_type    = var.instance_type
   subnet_id        = module.network.public_subnet_ids[0]
   vpc_id           = module.network.vpc_id

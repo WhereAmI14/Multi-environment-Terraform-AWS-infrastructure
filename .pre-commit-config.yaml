@@ -3,19 +3,19 @@ repos:
     rev: v1.98.0
     hooks:
       - id: terraform_fmt
-        files: (^|.*/)aws-terra-3/(dev|staging|production|global|modules)/.*\.tf$|^(dev|staging|production|global|modules)/.*\.tf$
+        files: ^(dev|staging|production|global|modules)/.*\.tf$
       - id: terraform_validate
-        files: (^|.*/)aws-terra-3/(dev|staging|production|global|modules)/.*\.tf$|^(dev|staging|production|global|modules)/.*\.tf$
+        files: ^(dev|staging|production|global|modules)/.*\.tf$
       - id: terraform_tflint
-        files: (^|.*/)aws-terra-3/(dev|staging|production|global|modules)/.*\.tf$|^(dev|staging|production|global|modules)/.*\.tf$
+        files: ^(dev|staging|production|global|modules)/.*\.tf$
 
   - repo: local
     hooks:
       - id: checkov-system
         name: checkov (system)
-        entry: /home/ivanr/.venv/bin/checkov
+        entry: checkov
         language: system
-        files: (^|.*/)aws-terra-3/(dev|staging|production|global|modules)/.*\.tf$|^(dev|staging|production|global|modules)/.*\.tf$
+        files: ^(dev|staging|production|global|modules)/.*\.tf$
         args:
           - --quiet
           - --framework

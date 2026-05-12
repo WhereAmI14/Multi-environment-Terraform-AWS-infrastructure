@@ -1,13 +1,19 @@
 variable "aws_region" {
   type        = string
   description = "AWS region"
-  default     = "eu-central-1"
+  default     = "us-east-1"
+}
+
+variable "project_name" {
+  type        = string
+  description = "Project name used for common tags and the example web page"
+  default     = "terraform-aws-web-stack"
 }
 
 variable "name_prefix" {
   type        = string
   description = "Resource name prefix"
-  default     = "terra3-staging"
+  default     = "web-stack-staging"
 }
 
 variable "vpc_cidr" {
@@ -18,8 +24,8 @@ variable "vpc_cidr" {
 
 variable "azs" {
   type        = list(string)
-  description = "Availability zones"
-  default     = ["eu-central-1a", "eu-central-1b"]
+  description = "Availability zones. Leave empty to use the first two available zones in aws_region."
+  default     = []
 }
 
 variable "public_subnet_cidrs" {
@@ -36,8 +42,8 @@ variable "private_subnet_cidrs" {
 
 variable "ami_id" {
   type        = string
-  description = "AMI for app server"
-  default     = "ami-0bae57ee7c4478e01"
+  description = "Optional AMI for the app server. Leave null to use the latest Amazon Linux 2023 AMI."
+  default     = null
 }
 
 variable "instance_type" {
