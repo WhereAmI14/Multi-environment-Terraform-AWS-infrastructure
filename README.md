@@ -147,16 +147,6 @@ make plan-production # plan production
 make cost-dev        # run infracost for dev
 ```
 
-## Terraform Docs
-
-Run `make docs` to refresh the generated root-module documentation.
-
-<!-- BEGIN_TF_DOCS -->
-
-Generated Terraform inputs and outputs are inserted here by `terraform-docs`.
-
-<!-- END_TF_DOCS -->
-
 ## Cost Notes
 
 Defaults are kept small for learning:
@@ -164,10 +154,6 @@ Defaults are kept small for learning:
 - EC2: `t3.micro`
 - RDS: `db.t3.micro`
 - RDS storage: `20 GB`
-
-AWS Free Tier is account-wide, not per environment. Running `dev`, `staging`,
-and `production` at the same time can still create billable usage. For learning,
-apply one environment at a time and destroy it when finished.
 
 ## CI/CD
 
