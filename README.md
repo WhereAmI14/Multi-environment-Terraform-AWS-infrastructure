@@ -152,26 +152,10 @@ make cost-dev        # run infracost for dev
 Run `make docs` to refresh the generated root-module documentation.
 
 <!-- BEGIN_TF_DOCS -->
+
 Generated Terraform inputs and outputs are inserted here by `terraform-docs`.
+
 <!-- END_TF_DOCS -->
-
-## State And Secrets
-
-Do not commit real `terraform.tfvars`, `backend.hcl`, state files, plan files, or
-crash logs. The repository includes example files only:
-
-- `*.tfvars.example`
-- `backend.hcl.example`
-
-Before making a public repository, run:
-
-```bash
-git status --ignored
-git ls-files | grep -E '(^|/)(terraform.tfvars|backend.hcl|.*\.tfstate.*)$'
-```
-
-If the second command prints real secret/state files, remove them from git
-history before publishing.
 
 ## Cost Notes
 
